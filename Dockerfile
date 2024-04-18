@@ -1,29 +1,14 @@
-# Use an official Node.js runtime as the base image
-FROM node:14-alpine as build
+# Use a base image with Java installed
+FROM openjdk:11-jre-slim
 
-# Set the working directory inside the container
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json to the working directory
-COPY package*.json ./
+# Copy the packaged JAR file into the container at the defined working directory
+COPY target/*.jar app.jar
 
-# Install dependencies
-RUN npm install
+# Expose the port that the application will run on
+EXPOSE 8080
 
-# Copy the remaining application code to the working directory
-COPY . .
-
-# Build the React app for production
-RUN npm run build
-
-# Use nginx as the base image for serving the React app
-FROM nginx:alpine
-
-# Copy the built React app from the build stage to the nginx public directory
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80 to the outside world
-EXPOSE 9192
-
-# Start nginx when the container starts
-CMD ["nginx", "-g", "daemon off;"]
+# Define the command to run the application when the container starts
+CMD ["java", "-jar", "app.jar"]
